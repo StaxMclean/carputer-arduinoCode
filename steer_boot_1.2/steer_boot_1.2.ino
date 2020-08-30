@@ -100,14 +100,7 @@ void loop() {
   delay(d);
 }
 
-void buttonPress(int i){
-  Serial.print("going to send press for button int ");
-  Serial.println(i);
-  Serial.println("sending usb");
-  buttonUsb(i);
-}
-
-void buttonUsb(int i) {
+void buttonPress(int i) {
   Keyboard.begin();
   int ascii = buttons[i][2];
   c = 0;
