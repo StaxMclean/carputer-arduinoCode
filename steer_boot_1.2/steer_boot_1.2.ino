@@ -5,17 +5,16 @@
 
 // buttons[i][0] = minTrigger,
 // buttons[i][1] = maxTrigger,
-// buttons[i][2] = funcType(1=pinOut or 2=Usb),
-// buttons[i][3] = funcValue(pinout or ascii),
-const int buttons[][8] = {
-  {283, 327, 2, 110}, //seek up - next - n 
-  {220, 264, 2, 118}, //seek down - prev - v 
-  {147, 191, 2, 49}, //scan up - scroll left - 1
-  {59, 108, 2, 50}, //scan down - scroll right - 2 
-  {518, 596, 2, 93},  //vol_u - vol up - ]  
-  {464, 506, 2, 91},   //vol_d - vol down - [
-  {413, 450, 2, 109},  //src - voice - m   
-  {347, 403, 2, 98},   //mute - play/pause - b   
+// buttons[i][2] = funcValue(ascii),
+const int buttons[][3] = {
+  {283, 327, 110}, //seek up - next - n 
+  {220, 264, 118}, //seek down - prev - v 
+  {147, 191, 49}, //scan up - scroll left - 1
+  {59, 108, 50}, //scan down - scroll right - 2 
+  {518, 596, 93},  //vol_u - vol up - ]  
+  {464, 506, 91},   //vol_d - vol down - [
+  {413, 450, 109},  //src - voice - m   
+  {347, 403, 98},   //mute - play/pause - b   
 };
 const int analogInPin = A5;  // Analog input pin that the stepped resistor circuit is attached to
 const int referenceInPin = A4;  // Analog input pin that the stepped resistor circuit is attached to
@@ -24,12 +23,11 @@ const int referenceInPin = A4;  // Analog input pin that the stepped resistor ci
 const int  buttonPin = 0;    // the pin that the pushbutton is attached to
 const int switchPin = 2;
 
-float x = 0.000;                //value read from the pot
+float x = 0.000;                //value read from the steering wheel button
 float y = 0.000;                //value read from the battery
 int z = 0;                //ratio
 int i;                    //button loop-counter
 int c = 0;                //button streak-counter
-boolean found = false;    //global counter-stop
 int v = 5;                //verify necessary detection length in loops to press button
 int vr = 5;               //verify necessary detection length in loops to release button
 int d = 20;               //check-loop duration in ms
@@ -44,15 +42,7 @@ int lastButtonState = 0;     // previous state of the button
 void setup() {
   //initialize serial communications at 9600 bps
   Serial.begin(9600);
-  //set pinout types
-  int j;
-  for(j = 0; j <= 7; j = j + 1) {
-    //if button type is pinOut
-    if(buttons[j][2] == 1) {
-      //enable that pin as output
-      pinMode(buttons[j][3], OUTPUT);
-    }
-  }
+  //initialize keyboard
   Keyboard.begin();
 }
 
@@ -113,47 +103,13 @@ void loop() {
 void buttonPress(int i){
   Serial.print("going to send press for button int ");
   Serial.println(i);
-  if(buttons[i][2] == 1) {
-    Serial.println("sending gpio");
-    buttonGpio(i);
-  }
-  if(buttons[i][2] == 2) {
-    Serial.println("sending usb");
-    buttonUsb(i);
-  }
-}
-
-void buttonGpio(int i) {
-  int pinOut = buttons[i][3];
-  c = 0;
-  Serial.print("pressed gpio button ");
-  Serial.println(pinOut);
-  digitalWrite(pinOut, HIGH);
-  pressed = true;
-  while(pressed) {
-    x = analogRead(analogInPin);
-    y = analogRead(referenceInPin);
-    z=(x/y)*1000;
-    if(z <= buttons[i][0] || z >= buttons[i][1]) {
-      Serial.print("Outvalue detected: ");
-      Serial.println(z);
-      c = c + 1;
-    } else {
-      c = 0;
-    }
-    if(c >= vr) {
-      pressed = false;
-    }
-    delay(d2);
-  }
-  digitalWrite(pinOut, LOW);
-  Serial.print("released gpio button ");
-  Serial.println(pinOut);
+  Serial.println("sending usb");
+  buttonUsb(i);
 }
 
 void buttonUsb(int i) {
   Keyboard.begin();
-  int ascii = buttons[i][3];
+  int ascii = buttons[i][2];
   c = 0;
   Serial.print("pressed usb button ");
   Serial.println(ascii);
